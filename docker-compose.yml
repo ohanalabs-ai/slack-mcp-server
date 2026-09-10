@@ -12,6 +12,8 @@ services:
     volumes:
       - users_cache:/app/mcp-server/.users_cache.json
       - channels_cache:/app/mcp-server/.channels_cache.json
+    env_file:
+      - .env
     environment:
       SLACK_MCP_HOST: "0.0.0.0"
       SLACK_MCP_PORT: "3001"
