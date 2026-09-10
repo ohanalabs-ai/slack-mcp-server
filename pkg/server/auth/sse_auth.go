@@ -23,7 +23,7 @@ func withAuthKey(ctx context.Context, auth string) context.Context {
 
 // Authenticate checks if the request is authenticated based on the provided context.
 func validateToken(ctx context.Context, logger *zap.Logger) (bool, error) {
-	// no configured token means no authentication
+	// no configured token AND no broker issuer means no authentication
 	keyA := os.Getenv("SLACK_MCP_API_KEY")
 	if keyA == "" {
 		keyA = os.Getenv("SLACK_MCP_SSE_API_KEY")
@@ -32,8 +32,15 @@ func validateToken(ctx context.Context, logger *zap.Logger) (bool, error) {
 		}
 	}
 
-	if keyA == "" {
-		logger.Debug("No SSE API key configured, skipping authentication",
+	// MCP_OAUTH_BROKER_ISSUER enables an additional accepted credential
+	// shape (a broker-issued JWT, verified via jwks_auth.go) alongside the
+	// static key above -- not a replacement for it. Checked here, not just
+	// inside validateBrokerJWT, so its presence alone is enough to require
+	// *some* auth even when SLACK_MCP_API_KEY is unset.
+	brokerIssuer := os.Getenv("MCP_OAUTH_BROKER_ISSUER")
+
+	if keyA == "" && brokerIssuer == "" {
+		logger.Debug("No SSE API key or broker issuer configured, skipping authentication",
 			zap.String("context", "http"),
 		)
 		return true, nil
@@ -56,17 +63,28 @@ func validateToken(ctx context.Context, logger *zap.Logger) (bool, error) {
 		keyB = strings.TrimPrefix(keyB, "Bearer ")
 	}
 
-	if subtle.ConstantTimeCompare([]byte(keyA), []byte(keyB)) != 1 {
-		logger.Warn("Invalid auth token provided",
+	if keyA != "" && subtle.ConstantTimeCompare([]byte(keyA), []byte(keyB)) == 1 {
+		logger.Debug("Auth token validated successfully",
 			zap.String("context", "http"),
 		)
-		return false, fmt.Errorf("invalid auth token")
+		return true, nil
 	}
 
-	logger.Debug("Auth token validated successfully",
+	if brokerIssuer != "" {
+		if brokerAuthed, brokerErr := validateBrokerJWT(logger, keyB); brokerErr != nil {
+			return false, brokerErr
+		} else if brokerAuthed {
+			logger.Debug("Auth token validated via mcp-oauth-broker JWKS",
+				zap.String("context", "http"),
+			)
+			return true, nil
+		}
+	}
+
+	logger.Warn("Invalid auth token provided",
 		zap.String("context", "http"),
 	)
-	return true, nil
+	return false, fmt.Errorf("invalid auth token")
 }
 
 // AuthFromRequest extracts the auth token from the request headers.

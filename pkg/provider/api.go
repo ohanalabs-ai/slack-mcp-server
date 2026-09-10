@@ -642,6 +642,21 @@ func New(transport string, logger *zap.Logger) *ApiProvider {
 	xoxcToken := os.Getenv("SLACK_MCP_XOXC_TOKEN")
 	xoxdToken := os.Getenv("SLACK_MCP_XOXD_TOKEN")
 
+	// If MCP_OAUTH_BROKER_URL is set, prefer a token fetched live from
+	// mcp-oauth-broker over a statically configured SLACK_MCP_XOXP_TOKEN --
+	// this is what lets an operator stop manually pasting/rotating a Slack
+	// token into .env. A fetch failure falls back to whatever static env
+	// vars are set below rather than failing startup outright, so a
+	// temporarily-unreachable broker doesn't take this server down.
+	if brokerToken, err := FetchLatestBrokerCredential(logger); err != nil {
+		logger.Warn("Failed to fetch credential from mcp-oauth-broker, falling back to static token env vars",
+			zap.String("context", "console"),
+			zap.Error(err),
+		)
+	} else if brokerToken != "" {
+		xoxpToken = brokerToken
+	}
+
 	// Warn if both user and bot tokens are set
 	if xoxpToken != "" && xoxbToken != "" {
 		logger.Warn(
