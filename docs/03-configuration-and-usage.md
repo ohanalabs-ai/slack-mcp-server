@@ -159,9 +159,9 @@ Open your `claude_desktop_config.json` and add the mcp server to the list of `mc
 Please see [Docker](#Using-Docker) for more information.
 </details>
 
-### Using npx with `sse` transport:
+### Using npx with streamable HTTP transport (`/mcp`):
 
-In case you would like to run it in `sse` mode, then you  should use `mcp-remote` wrapper for Claude Desktop and deploy/expose MCP server somewhere e.g. with `ngrok` or `docker-compose`.
+In case you would like to run it in `http` mode, then you  should use `mcp-remote` wrapper for Claude Desktop and deploy/expose MCP server somewhere e.g. with `ngrok` or `docker-compose`.
 
 ```json
 {
@@ -171,7 +171,7 @@ In case you would like to run it in `sse` mode, then you  should use `mcp-remote
       "args": [
         "-y",
         "mcp-remote",
-        "https://x.y.z.q:3001/sse",
+        "https://x.y.z.q:3001/mcp",
         "--header",
         "Authorization: Bearer ${SLACK_MCP_API_KEY}"
       ],
@@ -184,7 +184,7 @@ In case you would like to run it in `sse` mode, then you  should use `mcp-remote
 ```
 
 <details>
-<summary>Or, sse transport for Windows.</summary>
+<summary>Or, streamable HTTP transport for Windows.</summary>
 
 ```json
 {
@@ -194,7 +194,7 @@ In case you would like to run it in `sse` mode, then you  should use `mcp-remote
       "args": [
         "-y",
         "mcp-remote",
-        "https://x.y.z.q:3001/sse",
+        "https://x.y.z.q:3001/mcp",
         "--header",
         "Authorization: Bearer ${SLACK_MCP_API_KEY}"
       ],
@@ -209,7 +209,7 @@ In case you would like to run it in `sse` mode, then you  should use `mcp-remote
 
 ### TLS and Exposing to the Internet
 
-There are several reasons why you might need to setup HTTPS for your SSE.
+There are several reasons why you might need to setup HTTPS for your streamable HTTP endpoint.
 - `mcp-remote` is capable to handle only https schemes;
 - it is generally a good practice to use TLS for any service exposed to the internet;
 
@@ -250,7 +250,7 @@ docker-compose up -d
 
 | Argument                    | Required ? | Description                                                                                                                                                                                                         |
 |-----------------------------|------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `--transport` or `-t`       | Yes        | Select transport for the MCP Server, possible values are: `stdio`, `sse`                                                                                                                                            |
+| `--transport` or `-t`       | Yes        | Select transport for the MCP Server, possible values are: `stdio`, `http`                                                                                                                                            |
 | `--enabled-tools` or `-e`   | No         | Comma-separated list of tools to register. If not set, all tools are registered. Runtime permissions (e.g., `SLACK_MCP_ADD_MESSAGE_TOOL`) are still enforced. Available tools: `conversations_history`, `conversations_replies`, `conversations_add_message`, `reactions_add`, `reactions_remove`, `attachment_get_data`, `conversations_search_messages`, `conversations_join`, `conversations_leave`, `conversations_unreads`, `conversations_mark`, `channels_list`, `channels_me`, `usergroups_list`, `usergroups_me`, `usergroups_create`, `usergroups_update`, `usergroups_users_update`, `users_search`. |
 
 ### Environment Variables
@@ -262,7 +262,7 @@ docker-compose up -d
 | `SLACK_MCP_XOXP_TOKEN`            | Yes*      | `nil`                     | User OAuth token (`xoxp-...`) — alternative to xoxc/xoxd                                                                                                                                                                                                                                  |
 | `SLACK_MCP_PORT`                  | No        | `13080`                   | Port for the MCP server to listen on                                                                                                                                                                                                                                                      |
 | `SLACK_MCP_HOST`                  | No        | `127.0.0.1`               | Host for the MCP server to listen on                                                                                                                                                                                                                                                      |
-| `SLACK_MCP_API_KEY`           | No        | `nil`                     | Bearer token for SSE and HTTP transports                                                                                                                                                                                                                                                            |
+| `SLACK_MCP_API_KEY`           | No        | `nil`                     | Bearer token for HTTP transport                                                                                                                                                                                                                                                            |
 | `SLACK_MCP_PROXY`                 | No        | `nil`                     | Proxy URL for outgoing requests                                                                                                                                                                                                                                                           |
 | `SLACK_MCP_USER_AGENT`            | No        | `nil`                     | Custom User-Agent (for Enterprise Slack environments)                                                                                                                                                                                                                                     |
 | `SLACK_MCP_CUSTOM_TLS`            | No        | `nil`                     | Send custom TLS-handshake to Slack servers based on `SLACK_MCP_USER_AGENT` or default User-Agent. (for Enterprise Slack environments)                                                                                                                                                     |
