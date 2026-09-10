@@ -32,7 +32,7 @@ jobs:
   docker-multiarch:
     name: 🐳 docker
     needs: [ setup ]
-    uses: ohanalabs-ai/github-platform/.github/workflows/docker-multiarch-cicd.yaml@main
+    uses: ohanalabs-ai/github-platform/.github/workflows/docker-multiarch-cicd.yaml@fix/strip-env-file-before-build
     permissions:
       contents: write
       packages: write
