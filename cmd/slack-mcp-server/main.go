@@ -24,8 +24,8 @@ func main() {
 	var transport string
 	var enabledToolsFlag string
 	var noCache bool
-	flag.StringVar(&transport, "t", "stdio", "Transport type (stdio, sse or http)")
-	flag.StringVar(&transport, "transport", "stdio", "Transport type (stdio, sse or http)")
+	flag.StringVar(&transport, "t", "stdio", "Transport type (stdio or http)")
+	flag.StringVar(&transport, "transport", "stdio", "Transport type (stdio or http)")
 	flag.StringVar(&enabledToolsFlag, "e", "", "Comma-separated list of enabled tools (empty = all tools)")
 	flag.StringVar(&enabledToolsFlag, "enabled-tools", "", "Comma-separated list of enabled tools (empty = all tools)")
 	flag.BoolVar(&noCache, "no-cache", false, "Skip user/channel cache loading on startup for faster initialization. Lookups by #channel-name or @username will not work; use channel/user IDs instead.")
@@ -102,36 +102,6 @@ func main() {
 				zap.Error(err),
 			)
 		}
-	case "sse":
-		host := os.Getenv("SLACK_MCP_HOST")
-		if host == "" {
-			host = defaultSseHost
-		}
-		port := os.Getenv("SLACK_MCP_PORT")
-		if port == "" {
-			port = strconv.Itoa(defaultSsePort)
-		}
-
-		sseServer := s.ServeSSE(":" + port)
-		logger.Info(
-			fmt.Sprintf("SSE server listening on %s", fmt.Sprintf("%s:%s/sse", host, port)),
-			zap.String("context", "console"),
-			zap.String("host", host),
-			zap.String("port", port),
-		)
-
-		if ready, _ := p.IsReady(); !ready {
-			logger.Info("Slack MCP Server is still warming up caches",
-				zap.String("context", "console"),
-			)
-		}
-
-		if err := sseServer.Start(host + ":" + port); err != nil {
-			logger.Fatal("Server error",
-				zap.String("context", "console"),
-				zap.Error(err),
-			)
-		}
 	case "http":
 		host := os.Getenv("SLACK_MCP_HOST")
 		if host == "" {
@@ -166,7 +136,7 @@ func main() {
 		logger.Fatal("Invalid transport type",
 			zap.String("context", "console"),
 			zap.String("transport", transport),
-			zap.String("allowed", "stdio, sse, http"),
+			zap.String("allowed", "stdio, http"),
 		)
 	}
 }

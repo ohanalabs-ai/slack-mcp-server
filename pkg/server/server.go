@@ -639,24 +639,6 @@ func NewMCPServer(provider *provider.ApiProvider, logger *zap.Logger, enabledToo
 	}
 }
 
-func (s *MCPServer) ServeSSE(addr string) *server.SSEServer {
-	s.logger.Info("Creating SSE server",
-		zap.String("context", "console"),
-		zap.String("version", version.Version),
-		zap.String("build_time", version.BuildTime),
-		zap.String("commit_hash", version.CommitHash),
-		zap.String("address", addr),
-	)
-	return server.NewSSEServer(s.server,
-		server.WithBaseURL(fmt.Sprintf("http://%s", addr)),
-		server.WithSSEContextFunc(func(ctx context.Context, r *http.Request) context.Context {
-			ctx = auth.AuthFromRequest(s.logger)(ctx, r)
-
-			return ctx
-		}),
-	)
-}
-
 func (s *MCPServer) ServeHTTP(addr string) *server.StreamableHTTPServer {
 	s.logger.Info("Creating HTTP server",
 		zap.String("context", "console"),
