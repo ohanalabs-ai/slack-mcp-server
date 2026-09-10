@@ -1,6 +1,9 @@
 services:
   mcp-server:
-    image: ghcr.io/korotovsky/slack-mcp-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
     restart: unless-stopped
     networks:
       - app-tier
