@@ -114,7 +114,7 @@ func IsAuthenticated(ctx context.Context, transport string, logger *zap.Logger) 
 	case "stdio":
 		return true, nil
 
-	case "sse", "http":
+	case "http":
 		authenticated, err := validateToken(ctx, logger)
 
 		if err != nil {

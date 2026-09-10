@@ -28,7 +28,7 @@ WORKDIR /app/mcp-server
 EXPOSE 3001
 
 ENTRYPOINT ["mcp-server"]
-CMD ["--transport", "sse"]
+CMD ["--transport", "http"]
 
 FROM alpine:3.22 AS production
 
@@ -41,4 +41,4 @@ WORKDIR /app
 EXPOSE 3001
 
 ENTRYPOINT ["mcp-server"]
-CMD ["--transport", "sse"]
+CMD ["--transport", "http"]
